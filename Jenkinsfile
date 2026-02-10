@@ -18,14 +18,14 @@ pipeline {
             }
         }
 
-        stage('Release Gate (25th only)') {
+        stage('Release Gate (10th only)') {
             steps {
                 script {
                     def day = sh(script: "date +%d", returnStdout: true).trim()
-                    if (day != "25") {
+                    if (day != "10") {
                         error("Release blocked. Allowed only on 25th, today is ${day}")
                     }
-                    echo "Release gate passed (25th)"
+                    echo "Release gate passed (10th)"
                 }
             }
         }
