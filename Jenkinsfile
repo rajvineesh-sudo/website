@@ -69,6 +69,10 @@ pipeline {
                       $K8S_CONTAINER=$IMAGE_NAME:$IMAGE_TAG \
                       -n $K8S_NAMESPACE
 
+                      kubectl annotate deployment website-deployment \
+                      kubernetes.io/change-cause="Jenkins build #${BUILD_NUMBER} deployed image vineeshraj/website:${BUILD_NUMBER}" \
+                      -n dev --overwrite
+
                       kubectl rollout status deployment/$K8S_DEPLOYMENT \
                       -n $K8S_NAMESPACE
                     '''
