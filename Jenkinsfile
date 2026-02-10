@@ -23,7 +23,7 @@ pipeline {
                 script {
                     def day = sh(script: "date +%d", returnStdout: true).trim()
                     if (day != "10") {
-                        error("Release blocked. Allowed only on 25th, today is ${day}")
+                        error("Release blocked. Allowed only on 10th, today is ${day}")
                     }
                     echo "Release gate passed (10th)"
                 }
