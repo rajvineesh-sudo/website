@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "vineeshraj/website"
+        IMAGE_TAG  = "v${BUILD_NUMBER}"
+        K8S_NAMESPACE = "dev"
         K8S_DEPLOYMENT = "website-deployment"
         K8S_CONTAINER = "website"
     }
@@ -31,8 +33,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                  docker build -t $IMAGE_NAME:$BUILD_NUMBER .
-                  docker tag $IMAGE_NAME:$BUILD_NUMBER $IMAGE_NAME:latest
+                  docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
@@ -55,20 +56,23 @@ pipeline {
         stage('Push Image to Docker Hub') {
             steps {
                 sh '''
-                  docker push $IMAGE_NAME:$BUILD_NUMBER
-                  docker push $IMAGE_NAME:latest
+                  docker push $IMAGE_NAME:$IMAGE_TAG
                 '''
             }
         }
 
         stage('Deploy to Kubernetes (Rolling Update)') {
             steps {
-                sh '''
-                  kubectl set image deployment/$K8S_DEPLOYMENT \
-                  $K8S_CONTAINER=$IMAGE_NAME:$BUILD_NUMBER
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh '''
+                      kubectl set image deployment/$K8S_DEPLOYMENT \
+                      $K8S_CONTAINER=$IMAGE_NAME:$IMAGE_TAG \
+                      -n $K8S_NAMESPACE
 
-                  kubectl rollout status deployment/$K8S_DEPLOYMENT
-                '''
+                      kubectl rollout status deployment/$K8S_DEPLOYMENT \
+                      -n $K8S_NAMESPACE
+                    '''
+                }
             }
         }
 
